@@ -1,0 +1,15 @@
+"""__NAME__领域服务：字段、状态和动作来自业务配置，数据处理骨架由基类复用。"""
+from __future__ import annotations
+
+from app.services.base import BaseModuleService
+
+
+class SchemaRegistryService(BaseModuleService):
+    MODULE = "schema_registry"
+    ENTITY = "Schema定义"
+    OPERATION_TERM = "校验"
+    LIST_FIELDS = ["Schema名称", "字段列表", "版本号", "兼容类型", "注册状态"]
+    REQUIRED_FIELDS = ["Schema名称", "字段列表", "版本号"]
+    STATUS_ORDER = ["草稿", "已注册", "已过时"]
+    ACTION_RULES = {"注册Schema": "已注册", "标记过时": "已过时"}
+    NEGATIVE_ACTIONS = []

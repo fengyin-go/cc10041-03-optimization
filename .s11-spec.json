@@ -1,0 +1,674 @@
+{
+  "domain": "数据工程",
+  "subdirection": "数仓与数据湖",
+  "app_name": "流批一体数据处理中心",
+  "app_slug": "stream-batch-process",
+  "app_desc": "统一管理流式加工和批量计算的数据处理平台，覆盖数据清洗、转换、关联和结果落地",
+  "frontend": "vue",
+  "backend": "python",
+  "port_frontend": 5196,
+  "port_backend": 8016,
+  "modules": [
+    {
+      "key": "stream_source",
+      "name": "流式数据源",
+      "entity": "流式源",
+      "fields": [
+        "源名称",
+        "消息队列主题",
+        "序列化格式",
+        "消费者组",
+        "启动偏移"
+      ],
+      "statuses": [
+        "待验证",
+        "已验证",
+        "已暂停"
+      ],
+      "actions": [
+        "验证连通",
+        "暂停消费"
+      ],
+      "action_targets": [
+        "已验证",
+        "已暂停"
+      ],
+      "metrics": [
+        "流源总数",
+        "已连接源",
+        "消息吞吐"
+      ],
+      "desc": "管理实时流式数据源的注册、消费位点和暂停恢复",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "transform_rule",
+      "name": "转换规则",
+      "entity": "转换规则",
+      "fields": [
+        "规则名称",
+        "输入Schema",
+        "输出Schema",
+        "转换表达式",
+        "异常处理策略"
+      ],
+      "statuses": [
+        "草稿",
+        "已发布",
+        "已弃用"
+      ],
+      "actions": [
+        "发布规则",
+        "弃用规则"
+      ],
+      "action_targets": [
+        "已发布",
+        "已弃用"
+      ],
+      "metrics": [
+        "规则总数",
+        "已发布规则",
+        "转换覆盖率"
+      ],
+      "desc": "管理数据清洗、格式转换和字段映射的ETL转换规则",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "batch_pipeline",
+      "name": "批量计算管道",
+      "entity": "计算管道",
+      "fields": [
+        "管道名称",
+        "输入源",
+        "输出目标",
+        "计算引擎",
+        "调度状态"
+      ],
+      "statuses": [
+        "待启动",
+        "运行中",
+        "已完成",
+        "运行失败"
+      ],
+      "actions": [
+        "启动管道",
+        "停止管道"
+      ],
+      "action_targets": [
+        "运行中",
+        "运行失败"
+      ],
+      "metrics": [
+        "管道总数",
+        "运行中管道",
+        "今日处理量"
+      ],
+      "desc": "管理批量数据计算的管道配置、执行和监控",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "join_config",
+      "name": "数据关联合并",
+      "entity": "关联配置",
+      "fields": [
+        "关联名称",
+        "左表源",
+        "右表源",
+        "关联键",
+        "关联类型"
+      ],
+      "statuses": [
+        "待生效",
+        "已生效",
+        "已停用"
+      ],
+      "actions": [
+        "启用关联",
+        "停用关联"
+      ],
+      "action_targets": [
+        "已生效",
+        "已停用"
+      ],
+      "metrics": [
+        "关联配置数",
+        "已生效关联",
+        "关联命中率"
+      ],
+      "desc": "管理多数据集关联键定义、关联类型和合并策略",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "checkpoint_mgr",
+      "name": "检查点管理",
+      "entity": "检查点",
+      "fields": [
+        "管道名称",
+        "检查点序列",
+        "创建时间",
+        "数据偏移量",
+        "恢复状态"
+      ],
+      "statuses": [
+        "活跃",
+        "已完成",
+        "异常"
+      ],
+      "actions": [
+        "从检查点恢复",
+        "废弃检查点"
+      ],
+      "action_targets": [
+        "活跃",
+        "异常"
+      ],
+      "metrics": [
+        "检查点总数",
+        "活跃检查点",
+        "异常检查点"
+      ],
+      "desc": "维护数据管道执行检查点以支持断点续做和故障恢复",
+      "page_shape": "job-timeline",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "error_handler",
+      "name": "异常处理策略",
+      "entity": "异常策略",
+      "fields": [
+        "策略名称",
+        "适用管道",
+        "异常类型",
+        "处理动作",
+        "最大重试"
+      ],
+      "statuses": [
+        "待生效",
+        "已生效",
+        "已停用"
+      ],
+      "actions": [
+        "启用策略",
+        "停用策略"
+      ],
+      "action_targets": [
+        "已生效",
+        "已停用"
+      ],
+      "metrics": [
+        "策略总数",
+        "已启用策略",
+        "捕获异常数"
+      ],
+      "desc": "配置数据管道的异常捕获、重试、跳过和死信处理策略",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "result_writer",
+      "name": "结果写入器",
+      "entity": "写入配置",
+      "fields": [
+        "配置名称",
+        "写入目标类型",
+        "输出格式",
+        "分区策略",
+        "写入模式"
+      ],
+      "statuses": [
+        "待生效",
+        "已生效",
+        "已停用"
+      ],
+      "actions": [
+        "启用写入",
+        "停用写入"
+      ],
+      "action_targets": [
+        "已生效",
+        "已停用"
+      ],
+      "metrics": [
+        "写入配置数",
+        "已启用配置",
+        "今日写入量"
+      ],
+      "desc": "管理计算结果写入不同目标存储的配置和分区",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "late_data",
+      "name": "迟到数据处理",
+      "entity": "迟到策略",
+      "fields": [
+        "策略名称",
+        "最大延迟时间",
+        "迟到处理方式",
+        "侧输出目标",
+        "生效管道"
+      ],
+      "statuses": [
+        "待生效",
+        "已生效",
+        "已停用"
+      ],
+      "actions": [
+        "启用策略",
+        "停用策略"
+      ],
+      "action_targets": [
+        "已生效",
+        "已停用"
+      ],
+      "metrics": [
+        "迟到策略数",
+        "已启用策略",
+        "捕获迟到数"
+      ],
+      "desc": "管理流式计算中迟到数据的处理策略和侧输出路径",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "window_config",
+      "name": "窗口配置",
+      "entity": "窗口配置",
+      "fields": [
+        "窗口名称",
+        "窗口类型",
+        "窗口长度",
+        "滑动步长",
+        "时间特征"
+      ],
+      "statuses": [
+        "待生效",
+        "已生效",
+        "已停用"
+      ],
+      "actions": [
+        "启用窗口",
+        "停用窗口"
+      ],
+      "action_targets": [
+        "已生效",
+        "已停用"
+      ],
+      "metrics": [
+        "窗口配置数",
+        "已启用窗口",
+        "窗口触发数"
+      ],
+      "desc": "管理流式计算的时间窗口类型、长度和触发策略",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "aggregation_rule",
+      "name": "聚合计算规则",
+      "entity": "聚合规则",
+      "fields": [
+        "规则名称",
+        "聚合函数",
+        "分组键",
+        "过滤条件",
+        "输出度量"
+      ],
+      "statuses": [
+        "草稿",
+        "已发布",
+        "已弃用"
+      ],
+      "actions": [
+        "发布规则",
+        "弃用规则"
+      ],
+      "action_targets": [
+        "已发布",
+        "已弃用"
+      ],
+      "metrics": [
+        "规则总数",
+        "已发布规则",
+        "日均聚合量"
+      ],
+      "desc": "管理数据的聚合计算规则、分组维度和度量定义",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "data_cleanse",
+      "name": "数据清洗链",
+      "entity": "清洗步骤",
+      "fields": [
+        "步骤序号",
+        "清洗类型",
+        "输入字段",
+        "输出字段",
+        "清洗参数"
+      ],
+      "statuses": [
+        "待启用",
+        "已启用",
+        "已停用"
+      ],
+      "actions": [
+        "启用步骤",
+        "停用步骤"
+      ],
+      "action_targets": [
+        "已启用",
+        "已停用"
+      ],
+      "metrics": [
+        "步骤总数",
+        "已启用步骤",
+        "清洗覆盖字段"
+      ],
+      "desc": "配置字段级别的清洗步骤链：去空、格式校正、异常值处理",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "pipeline_monitor",
+      "name": "管道监控",
+      "entity": "监控指标",
+      "fields": [
+        "指标名称",
+        "监控目标",
+        "告警阈值",
+        "检查频率",
+        "生效状态"
+      ],
+      "statuses": [
+        "待启用",
+        "已启用",
+        "已关闭"
+      ],
+      "actions": [
+        "启用监控",
+        "关闭监控"
+      ],
+      "action_targets": [
+        "已启用",
+        "已关闭"
+      ],
+      "metrics": [
+        "监控项总数",
+        "已启用监控",
+        "今日告警"
+      ],
+      "desc": "监控管道吞吐、延迟、错误率和背压等关键指标",
+      "page_shape": "analysis-dashboard",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "backfill_handler",
+      "name": "历史回填",
+      "entity": "回填任务",
+      "fields": [
+        "任务名称",
+        "目标管道",
+        "回填时间范围",
+        "处理进度",
+        "执行状态"
+      ],
+      "statuses": [
+        "待调度",
+        "回填中",
+        "已完成",
+        "回填失败"
+      ],
+      "actions": [
+        "启动回填",
+        "取消回填"
+      ],
+      "action_targets": [
+        "回填中",
+        "回填失败"
+      ],
+      "metrics": [
+        "回填任务数",
+        "已完成回填",
+        "活跃回填"
+      ],
+      "desc": "管理数据管道的历史回填、补数和批量重算任务",
+      "page_shape": "job-timeline",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "output_audit",
+      "name": "输出审计",
+      "entity": "审计记录",
+      "fields": [
+        "管道名称",
+        "输出目标",
+        "输出时间",
+        "输出行数",
+        "校验结果"
+      ],
+      "statuses": [
+        "已记录",
+        "校验失败"
+      ],
+      "actions": [
+        "重新校验",
+        "标记通过"
+      ],
+      "action_targets": [
+        "已记录",
+        "校验失败"
+      ],
+      "metrics": [
+        "审计总数",
+        "校验失败数",
+        "今日输出量"
+      ],
+      "desc": "审计管道的输出写数和数据校验结果",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "schema_registry",
+      "name": "Schema注册",
+      "entity": "Schema定义",
+      "fields": [
+        "Schema名称",
+        "字段列表",
+        "版本号",
+        "兼容类型",
+        "注册状态"
+      ],
+      "statuses": [
+        "草稿",
+        "已注册",
+        "已过时"
+      ],
+      "actions": [
+        "注册Schema",
+        "标记过时"
+      ],
+      "action_targets": [
+        "已注册",
+        "已过时"
+      ],
+      "metrics": [
+        "Schema总数",
+        "已注册Schema",
+        "活跃版本"
+      ],
+      "desc": "管理数据Schema的注册、版本演进和兼容性检查",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "data_partition",
+      "name": "数据分区",
+      "entity": "分区配置",
+      "fields": [
+        "分区名称",
+        "分区键",
+        "分区类型",
+        "分区数量",
+        "生命周期"
+      ],
+      "statuses": [
+        "待启用",
+        "已启用",
+        "已停用"
+      ],
+      "actions": [
+        "启用分区",
+        "停用分区"
+      ],
+      "action_targets": [
+        "已启用",
+        "已停用"
+      ],
+      "metrics": [
+        "分区配置数",
+        "已启用分区",
+        "管理数据量"
+      ],
+      "desc": "管理数据存储分区策略、分区修剪和生命周期",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "pipeline_dag",
+      "name": "管道编排DAG",
+      "entity": "编排图",
+      "fields": [
+        "图名称",
+        "节点列表",
+        "依赖关系",
+        "触发方式",
+        "调度状态"
+      ],
+      "statuses": [
+        "草稿",
+        "已发布",
+        "已停用"
+      ],
+      "actions": [
+        "发布DAG",
+        "停用DAG"
+      ],
+      "action_targets": [
+        "已发布",
+        "已停用"
+      ],
+      "metrics": [
+        "DAG总数",
+        "已发布DAG",
+        "日均执行"
+      ],
+      "desc": "以有向无环图编排多管道依赖关系和并行调度",
+      "page_shape": "dag-graph",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "iceberg_table",
+      "name": "Iceberg表管理",
+      "entity": "Iceberg表",
+      "fields": [
+        "表名",
+        "所属业务域",
+        "存储格式",
+        "分区定义",
+        "当前快照数"
+      ],
+      "statuses": [
+        "创建中",
+        "已注册",
+        "已下线"
+      ],
+      "actions": [
+        "注册表",
+        "下线表"
+      ],
+      "action_targets": [
+        "已注册",
+        "已下线"
+      ],
+      "metrics": [
+        "Iceberg表数",
+        "活跃表",
+        "总快照数"
+      ],
+      "desc": "管理Apache Iceberg格式表的注册、快照和元数据维护",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "data_sample",
+      "name": "数据采样",
+      "entity": "采样配置",
+      "fields": [
+        "配置名称",
+        "采样比例",
+        "采样方式",
+        "目标表",
+        "采样状态"
+      ],
+      "statuses": [
+        "待执行",
+        "已执行",
+        "已过期"
+      ],
+      "actions": [
+        "执行采样",
+        "过期配置"
+      ],
+      "action_targets": [
+        "已执行",
+        "已过期"
+      ],
+      "metrics": [
+        "采样配置数",
+        "已执行采样",
+        "采样数据量"
+      ],
+      "desc": "配置数据的随机采样、分层采样和导出配置",
+      "page_shape": "crud-table",
+      "_page_shape_explicit": true
+    },
+    {
+      "key": "lineage_tracker",
+      "name": "计算血缘追踪",
+      "entity": "血缘条目",
+      "fields": [
+        "输入表",
+        "转换管道",
+        "输出表",
+        "血缘类型",
+        "记录时间"
+      ],
+      "statuses": [
+        "已建立",
+        "待验证",
+        "链路断裂"
+      ],
+      "actions": [
+        "刷新血缘",
+        "标记断裂"
+      ],
+      "action_targets": [
+        "已建立",
+        "链路断裂"
+      ],
+      "metrics": [
+        "血缘条目数",
+        "完整链路数",
+        "断裂链路数"
+      ],
+      "desc": "追踪数据从输入源经转换管道到输出目标的计算血缘",
+      "page_shape": "dag-graph",
+      "_page_shape_explicit": true
+    }
+  ]
+}
