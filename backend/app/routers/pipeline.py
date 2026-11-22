@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 
 from app.engine import StreamPipeline, BatchPipelineEngine, PipelineMonitorEngine, DataQualityEngine
+from app.engine.partition_store import partition_coordinator
 
 router = APIRouter(prefix="/api/pipeline", tags=["数据处理管道"])
 
@@ -25,10 +26,55 @@ def get_latest_checkpoint() -> dict[str, Any]:
 
 
 @router.post("/batch/dag/run")
-def run_batch_dag(dag_name: str | None = Query(default=None)) -> dict[str, Any]:
-    """执行批量DAG编排管道。"""
+def run_batch_dag(
+    dag_name: str | None = Query(default=None),
+    run_id: str | None = Query(default=None),
+    fail_branch: str | None = Query(default=None),
+    fail_attempts: int = Query(default=0, ge=0),
+) -> dict[str, Any]:
+    """执行批量DAG编排管道：独立分支并行，汇合节点按写入回执读取完整分区。"""
     engine = BatchPipelineEngine()
-    return engine.run_dag(dag_name=dag_name)
+    fault_plan = {fail_branch: fail_attempts} if fail_branch and fail_attempts else None
+    return engine.run_dag(dag_name=dag_name, run_id=run_id, fault_plan=fault_plan)
+
+
+@router.get("/batch/partition")
+def read_batch_partition(
+    target_table: str = Query(...),
+    target_partition: str = Query(default="默认分区"),
+    run_id: str = Query(...),
+    expected_branches: str | None = Query(default=None),
+) -> dict[str, Any]:
+    """按写入回执读取一个分区；未齐备时 complete=false 且不返回行数据。"""
+    expected = (
+        [item.strip() for item in expected_branches.split(",") if item.strip()]
+        if expected_branches else None
+    )
+    return partition_coordinator.read_partition(
+        target_table, target_partition, run_id=run_id, expected_branches=expected,
+    )
+
+
+@router.get("/batch/receipts")
+def list_batch_receipts(run_id: str = Query(...)) -> dict[str, Any]:
+    """列出一个运行的全部分支写入回执与并发尝试记录。"""
+    return {
+        "run_id": run_id,
+        "receipts": partition_coordinator.receipts_for_run(run_id),
+        "attempts": partition_coordinator.attempt_history(run_id),
+    }
+
+
+@router.get("/batch/partitions/{target_table}")
+def list_batch_partition_branches(
+    target_table: str,
+    run_id: str = Query(...),
+    target_partition: str = Query(default="默认分区"),
+) -> dict[str, Any]:
+    """按分支逐条查看某目标分区在本次运行的参与量与完整性。"""
+    return partition_coordinator.partition_summary(
+        target_table, target_partition, run_id=run_id
+    )
 
 
 @router.post("/batch/backfill")

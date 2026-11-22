@@ -71,6 +71,29 @@ npm run dev
 | 数据采样 | `data_sample` | 采样配置 | 配置名称、采样比例、采样方式 |
 | 计算血缘追踪 | `lineage_tracker` | 血缘条目 | 输入表、转换管道、输出表 |
 
+## 批量DAG并行与汇合
+
+`POST /api/pipeline/batch/dag/run` 按 DAG 依赖并行调度批量管道：
+
+- 入度为 0 的节点作为独立分支**并行**执行；有上游依赖的节点等上游写入回执齐备后才启动。
+- 每条分支经由结果写入器（`BranchResultWriter`）写入目标分区并交付一份**写入回执**；
+  编排层只凭回执确认输入齐备，不依赖「任务返回成功」。
+- 汇合节点读取上游分支写出的目标分区，只有在**期望分支全部提交**时才返回行数据；
+  缺分支时 `complete=false` 且 `rows` 恒为空，绝不会读到另一条分支尚未写完的数据。
+- 同一 `(run_id, branch)` 的重试与原尝试并发到达时，分区锁只放行一份结果，
+  后到者复用同一份回执并标记为 `duplicate`，重复提交不会叠加行数。
+
+回执与分区可逐条核对：
+
+```bash
+curl -X POST 'http://127.0.0.1:8016/api/pipeline/batch/dag/run?run_id=demo-1'
+curl 'http://127.0.0.1:8016/api/pipeline/batch/receipts?run_id=demo-1'
+curl 'http://127.0.0.1:8016/api/pipeline/batch/partitions/dwd_order_detail?run_id=demo-1&target_partition=dt%3D2026-11-22'
+```
+
+故障注入：`fail_branch=<管道名>&fail_attempts=1` 让指定分支首次写入失败后自动重试，
+用于验证「一条共享目标写入失败重试时，第三条仍产出、同目标两条都参与汇合」。
+
 ## 约定
 
 - 全部模块共享`frontend/src/views/WorkbenchView.vue|tsx`和一套资源路由。
